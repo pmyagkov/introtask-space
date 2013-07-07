@@ -8,16 +8,13 @@
  */
 function Planet(name, position, availableAmountOfCargo) {
     if (typeof name != 'undefined' && typeof position != 'undefined' && typeof availableAmountOfCargo != 'undefined') {
-        var self = {
-            _name: name,
-            _position: position,
-            _availableCargo: availableAmountOfCargo
-        };
-
-        return self;
+        this._name = name;
+        this._position = position;
+        this._availableCargo = availableAmountOfCargo;
     }
-
-    throw new Error('Not all parameters passed to the Planet constructor');
+    else {
+        throw new Error('Not all parameters passed to the Planet constructor');
+    }
 }
 
 /**

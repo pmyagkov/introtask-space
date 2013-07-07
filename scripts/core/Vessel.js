@@ -8,19 +8,18 @@
 function Vessel(name, position, capacity) {
 
     if (typeof name != 'undefined' && typeof position != 'undefined' && typeof capacity != 'undefined') {
-        var self = {
-            _name: name,
-            _position: position,
-            _capacity: capacity,
-            _load: 0,
-            _landed: false,
-            _landedOn: null
-        };
-
-        return self;
+        this._name = name;
+        this._position = position;
+        this._capacity = capacity;
+        this._load = 0;
+        this._landed = false;
+        this._landedOn = null;
+    }
+    else {
+        throw new Error('Not all parameters passed to the Vessel constructor');
     }
 
-    throw new Error('Not all parameters passed to the Vessel constructor');
+
 }
 
 /**
@@ -57,7 +56,10 @@ Vessel.prototype.report = function () {
  * @name Vessel.getFreeSpace
  */
 Vessel.prototype.getFreeSpace = function () {
-    console.log((this._capacity - this._load) + 'т');
+    var freeSpace = this._capacity - this._load;
+    console.log(freeSpace + 'т');
+
+    return freeSpace;
 }
 
 /**
@@ -66,6 +68,8 @@ Vessel.prototype.getFreeSpace = function () {
  */
 Vessel.prototype.getOccupiedSpace = function () {
     console.log(this._load + 'т');
+
+    return this._load;
 }
 
 /**
@@ -74,6 +78,9 @@ Vessel.prototype.getOccupiedSpace = function () {
  * @param {Number} Number of cargo to append
  */
 Vessel.prototype.loadCargo = function (cargo) {
+    if (!this._landed) {
+        throw new Error("The vessel is no landed");
+    }
     if (cargo > this.getFreeSpace()) {
         throw new Error("Not enough space in the vessel to load the cargo");
     }
@@ -86,6 +93,10 @@ Vessel.prototype.loadCargo = function (cargo) {
  * @param {Number} Number of cargo to remove (optional)
  */
 Vessel.prototype.unloadCargo = function (cargo) {
+    if (!this._landed) {
+        throw new Error("The vessel is no landed");
+    }
+
     if (typeof cargo != 'undefined') {
         if (cargo > this.getOccupiedSpace()) {
             throw new Error("Amount of cargo to unload is too large");
@@ -97,7 +108,6 @@ Vessel.prototype.unloadCargo = function (cargo) {
     }
 
     this._load = 0;
-
 }
 
 /**
@@ -114,15 +124,17 @@ Vessel.prototype.flyTo = function (newPosition) {
     this._landed = false;
     this._landedOn = null;
 
-    if (typeof newPosition == 'Array') {
+    if (_.isArray(newPosition)) {
         this._position = newPosition;
     }
-    else if (typeof newPosition == 'Object') {
+    else if (_.isObject(newPosition)) {
         this._position = newPosition.getPosition();
     }
     else {
         throw new Error('Unrecognized parameter type. It\'s neither Array nor Object');
     }
+
+    return this._position;
 }
 
 /**
@@ -156,7 +168,7 @@ Vessel.prototype.isLanded = function (planet) {
 }
 
 /**
- * Проверяет, приземлился ли корабль на заданной планете. Если планета не передана, проверяет, приземлился ли вообще.
+ * Приземляет корабль на планете.
  * @param {Planet} Планета (Опциональный)
  */
 Vessel.prototype.landTo = function (planet) {
