@@ -105,9 +105,8 @@ Vessel.prototype.unloadCargo = function (cargo) {
     }
     else {
         // removing all the cargo
+        this._load = 0;
     }
-
-    this._load = 0;
 }
 
 /**
