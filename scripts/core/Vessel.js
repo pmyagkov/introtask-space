@@ -76,6 +76,7 @@ Vessel.prototype.getOccupiedSpace = function () {
  * Выводит количество занятого места на корабле.
  * @name Vessel.loadCargo
  * @param {Number} Number of cargo to append
+ * @return {Number} Текущая загруженность корабля
  */
 Vessel.prototype.loadCargo = function (cargo) {
     if (!this._landed) {
@@ -85,12 +86,15 @@ Vessel.prototype.loadCargo = function (cargo) {
         throw new Error("Not enough space in the vessel to load the cargo");
     }
     this._load += cargo;
+
+    return this._load;
 }
 
 /**
  * Выводит количество занятого места на корабле.
  * @name Vessel.unloadCargo
  * @param {Number} Number of cargo to remove (optional)
+ * @return {Number} Текущая загруженность корабля
  */
 Vessel.prototype.unloadCargo = function (cargo) {
     if (!this._landed) {
@@ -107,6 +111,8 @@ Vessel.prototype.unloadCargo = function (cargo) {
         // removing all the cargo
         this._load = 0;
     }
+
+    return this._load;
 }
 
 /**
