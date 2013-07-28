@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Межгалактический корабль</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles/main.css">
+
+    <script type="text/javascript" src="scripts/libs/underscore.js"></script>
+
+    <script type="text/javascript" src="scripts/core/Vessel.js"></script>
+    <script type="text/javascript" src="scripts/core/Planet.js"></script>
+
+    <script type="text/javascript" src="scripts/libs/jquery.js"></script>
+    <script type="text/javascript" src="scripts/core/Presentation.js"></script>
+
+
+</head>
+<body>
+    <div id="output">
+        <div class="pane">
+            <span class="title">Вывод:</span>
+            <input type="button" id="clear-output" class="button" value="Очистить"/>
+        </div>
+
+        <div id="output-inner" class="inner"></div>
+    </div>
+    <div id="code">
+        <div class="pane">
+            <span class="title">Код:</span>
+            <input type="button" id="clear-code" class="button" value="Очистить"/>
+            <input type="button" id="execute" class="button" value="Выполнить"/>
+        </div>
+        <textarea class="inner">
+var vessel = new Vessel('Яндекс', [0,0], 1000);
+var planetA = new Planet('A', [0,0], 0);
+var planetB = new Planet('B', [100, 100], 5000);
+
+vessel.report();
+planetA.report();
+planetB.report();
+
+vessel.flyTo(planetB);
+planetB.loadCargoTo(vessel, 1000);
+vessel.report();
+
+vessel.flyTo(planetA);
+planetA.unloadCargoFrom(vessel, 500);
+vessel.report();
+planetA.report();
+planetB.report();
+
+        </textarea>
+
+    </div>
+
+</body>
+</html>

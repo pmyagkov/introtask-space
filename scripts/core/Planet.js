@@ -17,6 +17,19 @@ function Planet(name, position, availableAmountOfCargo) {
     }
 }
 
+/*
+ * Обработчик, который будет вызываться при вызове метода report
+ * */
+Planet.onReport = function () {};
+
+/**
+ * Возвращает префикс строки для формирования вывода.
+ * @name getReportPrefix
+ */
+Planet.prototype.getReportPrefix = function () {
+    return 'Планета ' + this._name + '. ';
+}
+
 /**
  * Возвращает имя планеты
  * @name Planet.getName
@@ -30,9 +43,15 @@ Planet.prototype.getName = function () {
  * @name Planet.report
  */
 Planet.prototype.report = function () {
-    console.log('Планета: ' + this._name +
-        '. Местоположение: ' + this._position.toString() +
-        '. Доступно груза: ' + this._availableCargo + 'т.');
+    var reportString = 'Планета "' + this._name
+        + '". Местоположение: ' + this._position.toString()
+        + (this._availableCargo > 0 ? '. Доступно груза: ' + this._availableCargo + 'т.' : '. Грузов нет.');
+
+    if (typeof Planet.onReport === 'function') {
+        Planet.onReport.call(this, reportString);
+    }
+
+    console.info(reportString);
 }
 
 /**
@@ -40,6 +59,8 @@ Planet.prototype.report = function () {
  * @name Planet.getAvailableAmountOfCargo
  */
 Planet.prototype.getAvailableAmountOfCargo = function () {
+    console.debug(this.getReportPrefix() + 'Груза осталось: ' + this._availableCargo + 'т.');
+
     return this._availableCargo;
 }
 
@@ -48,6 +69,8 @@ Planet.prototype.getAvailableAmountOfCargo = function () {
  * @name Planet.getPosition
  */
 Planet.prototype.getPosition = function () {
+    console.debug(this.getReportPrefix() + 'Местоположение: [' + this._position + '].');
+
     return this._position;
 }
 
@@ -56,18 +79,23 @@ Planet.prototype.getPosition = function () {
  *
  * Перед загрузкой корабль должен приземлиться на планету.
  * @param {Vessel} vessel Загружаемый корабль.
- * @param {Number} cargoWeight Вес загружаемого груза.
+ * @param {Number} cargo Вес загружаемого груза.
  * @name Vessel.loadCargoTo
  */
-Planet.prototype.loadCargoTo = function (vessel, cargoWeight) {
+Planet.prototype.loadCargoTo = function (vessel, cargo) {
+    var msg;
 
-    if (cargoWeight > this._capacity) {
-        throw new Error('Cargo weight is bigger then a planet capacity');
+    if (cargo > this._availableCargo) {
+        msg = this.getReportPrefix() + 'Количество груза для загрузки превышает имеющийся на планете.';
+        log.error(msg);
+        throw new Error(msg);
     }
-    vessel.loadCargo(cargoWeight);
-    this._capacity -= cargoWeight;
+    vessel.loadCargo(cargo);
+    this._availableCargo -= cargo;
 
-    return this._capacity;
+    console.debug(this.getReportPrefix() + cargo + 'т груза загружено на корабль ' + vessel.getName() + '. Загруженность: ' + this._availableCargo + 'т.');
+
+    return this._availableCargo;
 }
 
 /**
@@ -75,13 +103,15 @@ Planet.prototype.loadCargoTo = function (vessel, cargoWeight) {
  *
  * Перед выгрузкой корабль должен приземлиться на планету.
  * @param {Vessel} vessel Разгружаемый корабль.
- * @param {Number} cargoWeight Вес выгружаемого груза.
+ * @param {Number} cargo Вес выгружаемого груза.
  * @name Vessel.unloadCargoFrom
  */
-Planet.prototype.unloadCargoFrom = function (vessel, cargoWeight) {
-    vessel.unloadCargo(cargoWeight);
-    this._capacity += cargoWeight;
+Planet.prototype.unloadCargoFrom = function (vessel, cargo) {
+    vessel.unloadCargo(cargo);
+    this._availableCargo += cargo;
 
-    return this._capacity;
+    console.debug(this.getReportPrefix() + cargo + 'т груза отгружено с корабля ' + vessel.getName() + '. Загруженность: ' + this._availableCargo + 'т.');
+
+    return this._availableCargo;
 }
 

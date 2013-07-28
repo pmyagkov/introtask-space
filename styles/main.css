@@ -1,0 +1,60 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Verdana;
+}
+
+.pane {
+    height: 30px;
+}
+
+#output {
+    width: 49%;
+    height: 800px;
+    float: left;
+    color: #666666;
+
+}
+
+.title {
+    font-size: 20px;
+    color: #999999;
+    font-style: italic;
+    height: 25px;
+    display: block;
+    float: left;
+}
+
+#output .inner {
+    height: 100%;
+    font-size: 14px;
+    color: #666666;
+    border: #cccccc 1px solid;
+}
+
+#code {
+    width: 48%;
+    height: 400px;
+    float: right;
+}
+
+#code textarea{
+    height: 100%;
+    width: 100%;
+}
+
+.button {
+    width: 120px;
+    height: 30px;
+    float: right;
+    font-size: 100%;
+}
+
+#execute {
+    font-size: 120%;
+}
+
+.error {
+    color: red;
+}
+

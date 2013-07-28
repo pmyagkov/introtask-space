@@ -18,8 +18,27 @@ function Vessel(name, position, capacity) {
     else {
         throw new Error('Not all parameters passed to the Vessel constructor');
     }
+}
 
+/*
+* Обработчик, который будет вызываться при вызове метода report
+* */
+Vessel.onReport = function () {};
 
+/**
+ * Возвращает префикс строки для формирования вывода.
+ * @name getReportPrefix
+ */
+Vessel.prototype.getReportPrefix = function () {
+    return 'Корабль "' + this._name + '". ';
+}
+
+/**
+ * Возвращает имя корабля
+ * @name getName
+ */
+Vessel.prototype.getName = function () {
+    return this._name;
 }
 
 /**
@@ -27,28 +46,33 @@ function Vessel(name, position, capacity) {
  * @example
  * vessel.report(); // Грузовой корабль. Местоположение: Земля. Товаров нет.
  * @example
- * vesserl.report(); // Грузовой корабль. Местоположение: 50,20. Груз: 200т.
+ * vessel.report(); // Грузовой корабль. Местоположение: 50,20. Груз: 200т.
  * @name Vessel.report
  */
 Vessel.prototype.report = function () {
+    var reportString = this.getReportPrefix();
 
-    var consoleString = 'Грузовой корабль ' + this._name + '. ';
-
-    consoleString += 'Местоположение: ';
+    reportString += 'Местоположение: ';
     if (this.isLanded()) {
-        consoleString += this._landedOn.getName();
+        reportString += this._landedOn.getName();
     }
     else {
-        consoleString += this._position.toString();
+        reportString += this._position.toString();
     }
-    consoleString += '. ';
+    reportString += '. ';
 
     if (this.getOccupiedSpace() == 0) {
-        consoleString += 'Товаров нет.'
+        reportString += 'Товаров нет.'
     }
     else {
-        consoleString += 'Груз: ' + this._load + 'т.';
+        reportString += 'Груз: ' + this._load + 'т.';
     }
+
+    if (typeof Vessel.onReport === 'function') {
+        Vessel.onReport.call(this, reportString);
+    }
+
+    console.info(reportString);
 }
 
 /**
@@ -57,7 +81,9 @@ Vessel.prototype.report = function () {
  */
 Vessel.prototype.getFreeSpace = function () {
     var freeSpace = this._capacity - this._load;
-    console.log(freeSpace + 'т');
+
+    var consoleString = this.getReportPrefix();
+    console.debug(consoleString + 'Свободного места: ' + (freeSpace > 0 ? freeSpace + 'т' : 'нет'));
 
     return freeSpace;
 }
@@ -67,7 +93,8 @@ Vessel.prototype.getFreeSpace = function () {
  * @name Vessel.getOccupiedSpace
  */
 Vessel.prototype.getOccupiedSpace = function () {
-    console.log(this._load + 'т');
+    var consoleString = this.getReportPrefix();
+    console.debug(consoleString + 'Загруженность: ' + (this._load > 0 ? this._load + 'т' : 'нет'));
 
     return this._load;
 }
@@ -79,13 +106,21 @@ Vessel.prototype.getOccupiedSpace = function () {
  * @return {Number} Текущая загруженность корабля
  */
 Vessel.prototype.loadCargo = function (cargo) {
+    var msg;
+
     if (!this._landed) {
-        throw new Error("The vessel is no landed");
+        msg = this.getReportPrefix() + 'Корабль не приземлен, загрузка не может быть произведена.';
+        console.error(msg);
+        throw new Error(msg);
     }
     if (cargo > this.getFreeSpace()) {
-        throw new Error("Not enough space in the vessel to load the cargo");
+        msg = this.getReportPrefix() + 'В корабле недостаточно свободного места для загрузки ' + cargo + 'т груза.';
+        console.error(msg)
+        throw new Error(msg);
     }
     this._load += cargo;
+    msg = this.getReportPrefix() + cargo + 'т загружены. Загруженность: ' + this._load + 'т.';
+    console.debug(msg);
 
     return this._load;
 }
@@ -97,26 +132,35 @@ Vessel.prototype.loadCargo = function (cargo) {
  * @return {Number} Текущая загруженность корабля
  */
 Vessel.prototype.unloadCargo = function (cargo) {
+    var msg;
+
     if (!this._landed) {
-        throw new Error("The vessel is no landed");
+        msg = this.getReportPrefix() + 'Корабль не приземлен. Отгрузка не может быть произведена';
+        console.error(msg);
+        throw new Error(msg);
     }
 
     if (typeof cargo != 'undefined') {
         if (cargo > this.getOccupiedSpace()) {
-            throw new Error("Amount of cargo to unload is too large");
+            msg = this.getReportPrefix() + 'Корабль не может отгрузить ' + cargo + 'т груза.';
+            console.error(msg);
+            throw new Error(msg);
         }
+        msg = this.getReportPrefix() + cargo + 'т отгружены. Загруженность: ' + this._load + 'т.';
         this._load -= cargo;
+        console.debug(msg);
     }
     else {
-        // removing all the cargo
+        msg = this.getReportPrefix() + cargo + 'т отгружены. Корабль пуст.';
         this._load = 0;
+        console.debug(msg);
     }
 
     return this._load;
 }
 
 /**
- * Переносит корабль в указанную точку.
+ * Переносит корабль в указанную точку. Если передана планета, то корабль приземляется на нее.
  * @param {Number}[]|Planet newPosition Новое местоположение корабля.
  * @example
  * vessel.flyTo([1,1]);
@@ -126,17 +170,24 @@ Vessel.prototype.unloadCargo = function (cargo) {
  * @name Vessel.report
  */
 Vessel.prototype.flyTo = function (newPosition) {
+    var msg;
+
     this._landed = false;
     this._landedOn = null;
 
     if (_.isArray(newPosition)) {
         this._position = newPosition;
+        console.debug(this.getReportPrefix() + 'Корабль переместился на позицию [' + newPosition.toString() + '].');
     }
     else if (_.isObject(newPosition)) {
         this._position = newPosition.getPosition();
+        console.debug(this.getReportPrefix() + 'Корабль прилетел к планете ' + newPosition.getName() + '.');
+        this.landTo(newPosition);
     }
     else {
-        throw new Error('Unrecognized parameter type. It\'s neither Array nor Object');
+        msg = 'Неожиданный тип параметра. Должен быть либо Array, либо Object.';
+        console.error(msg);
+        throw new Error(msg);
     }
 
     return this._position;
@@ -147,29 +198,37 @@ Vessel.prototype.flyTo = function (newPosition) {
  * @param {Planet} Планета. (Опциональный)
  */
 Vessel.prototype.isLanded = function (planet) {
+    var msg;
+    var result = true;
+
     if (!this._landed) {
-        return false;
+        result = false;
     }
 
     if (typeof planet !== 'undefined') {
         if (planet.constructor != Planet) {
-            throw new Error('Parameter planet has wrong type');
+            msg = 'Неожиданный тип параметра. Должен быть Planet.';
+            console.error(msg);
+            throw new Error(msg);
         }
 
         var planetPosition = planet.getPosition();
         var vesselPosition = this._position;
         if (planetPosition.length != vesselPosition.length) {
-            throw new Error('Number of position dimensions are different');
+            msg = 'Количество измерений массива местаположения корабля и планеты различны.';
+            console.error(msg);
+            throw new Error(msg);
         }
 
         for (var i = 0; i < planetPosition.length; i++) {
             if (planetPosition[i] != vesselPosition[i]) {
-                return false;
+                result = false;
             }
         }
     }
 
-    return true;
+    console.debug(this.getReportPrefix() + 'Корабль ' + (result ? '' : 'не ') + 'приземлен.');
+    return result;
 }
 
 /**
@@ -177,25 +236,38 @@ Vessel.prototype.isLanded = function (planet) {
  * @param {Planet} Планета (Опциональный)
  */
 Vessel.prototype.landTo = function (planet) {
+    var msg;
+
     if (typeof planet === 'undefined' || planet.constructor !== Planet) {
-        throw new Error('Planet is not specified or it\'s type is not correct');
+        msg = 'Планета не передата или имеет неверный тип.'
+        console.error(msg)
+        throw new Error(msg);
     }
 
     if (this._landed) {
-        throw new Error('The vessel is already landed');
+        msg = this.getReportPrefix() + 'Корабль уже приземлен.'
+        console.error(msg);
+        throw new Error(msg);
     }
 
     var planetPosition = planet.getPosition();
     var vesselPosition = this._position;
     if (planetPosition.length != vesselPosition.length) {
-        throw new Error('Number of position dimensions are different');
+        msg = 'Количество измерений массива местаположения корабля и планеты различны.';
+        console.error(msg);
+        throw new Error(msg);
     }
 
     for (var i = 0; i < planetPosition.length; i++) {
         if (planetPosition[i] != vesselPosition[i]) {
-            throw new Error('The vessel needs to fly to a planet prior to land on it');
+            msg = 'Чтобы приземлиться на планету, кораблю сначала необходимо до нее долететь.';
+            console.error(msg);
+            throw new Error(msg);
         }
     }
+
+
+    console.debug(this.getReportPrefix() + 'Корабль приземлился на планету ' + planet.getName() + '.');
 
     this._landed = true;
     this._landedOn = planet;
