@@ -60,20 +60,14 @@ Planet.prototype.getPosition = function () {
  * @name Vessel.loadCargoTo
  */
 Planet.prototype.loadCargoTo = function (vessel, cargoWeight) {
-    if (!vessel.isLanded(this)) {
-        throw new Error('The vessel isn\'t landed on the planet');
-    }
 
-    try {
-        if (cargoWeight > this._capacity) {
-            throw new Error('Cargo weight is bigger then a planet capacity');
-        }
-        vessel.loadCargo(cargoWeight);
-        this._capacity -= cargoWeight;
+    if (cargoWeight > this._capacity) {
+        throw new Error('Cargo weight is bigger then a planet capacity');
     }
-    catch (Error) {
-        console.error("Can't load cargo to the vessel");
-    }
+    vessel.loadCargo(cargoWeight);
+    this._capacity -= cargoWeight;
+
+    return this._capacity;
 }
 
 /**
@@ -85,17 +79,9 @@ Planet.prototype.loadCargoTo = function (vessel, cargoWeight) {
  * @name Vessel.unloadCargoFrom
  */
 Planet.prototype.unloadCargoFrom = function (vessel, cargoWeight) {
-    if (!vessel.isLanded(this)) {
-        throw new Error('The vessel isn\'t landed on the planet');
-    }
+    vessel.unloadCargo(cargoWeight);
+    this._capacity += cargoWeight;
 
-    try {
-        vessel.unloadCargo(cargoWeight);
-        this._capacity += cargoWeight;
-    }
-    catch (Error) {
-        console.error("Can't unload cargo from the vessel");
-    }
-
+    return this._capacity;
 }
 
