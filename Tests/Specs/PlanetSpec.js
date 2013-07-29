@@ -7,7 +7,6 @@ describe('A planet', function () {
         planet = new Planet('Test Planet', [100, 90], 500);
 
         vessel.flyTo(planet);
-        vessel.landTo(planet);
     });
 
     it('should not be able to load cargo over a planet\'s capacity', function () {
@@ -22,7 +21,7 @@ describe('A planet', function () {
     });
 
     it('should be able to unload cargo', function () {
-        expect(planet.loadCargoTo(vessel, 500)).toEqual(500);
+        expect(planet.loadCargoTo(vessel, 500)).toEqual(0);
         expect(planet.unloadCargoFrom(vessel, 400)).toEqual(400);
     });
 });

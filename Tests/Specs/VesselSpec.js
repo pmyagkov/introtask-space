@@ -7,7 +7,6 @@ describe('A vessel', function () {
         planet = new Planet('Test Planet', [100, 90], 5000);
     });
 
-
     it('should be able to fly', function () {
         expect(vessel.flyTo([10, 10])).toEqual([10,10]);
     });
@@ -18,7 +17,6 @@ describe('A vessel', function () {
 
     it('should not be able to land at the second time at once', function () {
         vessel.flyTo(planet);
-        vessel.landTo(planet)
         expect(function () { vessel.landTo(planet); }).toThrow();
     });
 
@@ -29,7 +27,7 @@ describe('A vessel', function () {
 
     it('should be able to land on a planet', function () {
         vessel.flyTo(planet);
-        expect(function () { vessel.landTo(planet); }).not.toThrow();
+        expect(vessel.isLanded(planet)).toEqual(true);
     });
 
     it('should not be able to load cargo in space', function () {
@@ -39,20 +37,17 @@ describe('A vessel', function () {
 
     it('should not be able to load cargo more then it\'s capacity', function () {
         vessel.flyTo(planet);
-        vessel.landTo(planet);
         expect(function () {vessel.loadCargo(1001);}).toThrow();
     });
 
     it('should not be able to load cargo more then it\'s capacity (already loaded with something)', function () {
         vessel.flyTo(planet);
-        vessel.landTo(planet);
         vessel.loadCargo(200);
         expect(function () {vessel.loadCargo(1001);}).toThrow();
     });
 
     it('should be able to load normal amount of cargo', function () {
         vessel.flyTo(planet);
-        vessel.landTo(planet);
         vessel.loadCargo(200);
         expect(vessel.loadCargo(600)).toEqual(800);
     });
@@ -64,14 +59,12 @@ describe('A vessel', function () {
 
     it('should not be able to unload cargo more then it has', function () {
         vessel.flyTo(planet);
-        vessel.landTo(planet);
         vessel.loadCargo(200);
         expect(function () {vessel.unloadCargo(300);}).toThrow();
     });
 
     it('should be able to unload normal amount of cargo', function () {
         vessel.flyTo(planet);
-        vessel.landTo(planet);
         vessel.loadCargo(200);
         expect(vessel.unloadCargo(100)).toEqual(100);
     });
